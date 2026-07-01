@@ -1,6 +1,8 @@
-# Food Store JPA — Plantilla TPI (Parte 2)
+# Food Store — Backend (Parte 2: JPA + Consola)
 
-Este README corresponde a la plantilla base para el desarrollo del TPI — Parte 2 (Backend JPA + Consola).
+Backend del sistema de gestión de pedidos Food Store, desarrollado con Java, JPA/Hibernate y base de datos H2 en archivo. La interacción con el sistema es completamente a través de un menú de consola que permite gestionar Categorías, Productos, Usuarios y Pedidos (con sus DetallePedido).
+
+Este proyecto es la Parte 2 del TPI de Programación III. La Parte 1 (frontend web) es un proyecto independiente.
 
 ---
 
@@ -15,11 +17,9 @@ Este README corresponde a la plantilla base para el desarrollo del TPI — Parte
 ---
 
 ## Estructura del proyecto
-
-```
 src/main/java/com/tp/jpa/
 │
-├── model/                        # Entidades JPA (NO modificar)
+├── model/                        # Entidades JPA
 │   ├── Base.java                 # Clase abstracta base (id, eliminado, createdAt)
 │   ├── Calculable.java           # Interfaz con calcularTotal()
 │   ├── Categoria.java
@@ -29,88 +29,59 @@ src/main/java/com/tp/jpa/
 │   ├── DetallePedido.java
 │   └── enums/
 │       ├── Rol.java
-│       ├── Estado.java
+│       ├── EstadoPedido.java
 │       └── FormaPago.java
 │
 ├── util/
-│   └── JPAUtil.java              # Factory singleton (NO modificar — ya implementado)
+│   └── JPAUtil.java              # Factory singleton de EntityManagerFactory
 │
-├── repository/                   # ★ COMPLETAR — queries personalizadas
-│   ├── BaseRepository.java       # CRUD genérico (NO modificar — ya implementado)
-│   ├── ProductoRepository.java   # Sin queries extra (NO modificar)
-│   ├── CategoriaRepository.java  # ★ Implementar buscarProductosPorCategoria()
-│   ├── UsuarioRepository.java    # ★ Implementar buscarPorMail() y buscarPedidosPorUsuario()
-│   └── PedidoRepository.java     # ★ Implementar buscarPorEstado()
+├── repository/
+│   ├── BaseRepository.java       # CRUD genérico (guardar, buscarPorId, listarActivos, eliminarLogico)
+│   ├── ProductoRepository.java   # Hereda el CRUD, sin queries propias
+│   ├── CategoriaRepository.java  # + buscarProductosPorCategoria()
+│   ├── UsuarioRepository.java    # + buscarPorMail(), buscarPedidosPorUsuario()
+│   └── PedidoRepository.java     # + buscarPorEstado()
 │
-└── Main.java                     # ★ COMPLETAR — menús de consola
-```
-
----
-
-## Qué está implementado
-
-| Componente | Estado |
-|---|---|
-| `JPAUtil` | ✅ Completo |
-| `BaseRepository` (guardar, buscarPorId, listarActivos, eliminarLogico) | ✅ Completo |
-| `ProductoRepository` | ✅ Completo (hereda todo de Base) |
-| Modelo completo (todas las entidades y enums) | ✅ Completo |
-| `Main` — estructura del menú principal | ✅ Esqueleto listo |
-
----
-
-## Qué hay que implementar
-
-### Repositorios
-
-| Clase | Método | Descripción |
-|---|---|---|
-| `CategoriaRepository` | `buscarProductosPorCategoria(Long categoriaId)` | JPQL navegando `c.productos` (la relación es unidireccional y Categoria es la dueña), filtrando por `eliminado = false` |
-| `UsuarioRepository` | `buscarPorMail(String mail)` | JPQL filtrando por mail y `eliminado = false`, retorna `Optional<Usuario>` |
-| `UsuarioRepository` | `buscarPedidosPorUsuario(Long idUsuario)` | JPQL navegando `u.pedidos` (la relación es unidireccional y Usuario es el dueño), filtrando por `eliminado = false` |
-| `PedidoRepository` | `buscarPorEstado(EstadoPedido estado)` | JPQL filtrando por estado y `eliminado = false` |
-
-### Menú de consola (`Main.java`)
-
-| Método | Descripción |
-|---|---|
-| `menuCategorias()` | Alta, modificar, baja lógica, listado |
-| `menuProductos()` | Alta (con selección de categoría), modificar, baja lógica, listado |
-| `menuUsuarios()` | Alta (mail único), modificar, baja lógica, listado, buscar por mail |
-| `menuPedidos()` | Alta (transacción atómica), cambiar estado, baja lógica, listados |
-| `menuReportes()` | Productos por categoría, pedidos por usuario/estado, total facturado |
+└── Main.java                     # Menú de consola
 
 ---
 
 ## Cómo ejecutar
 
 ```bash
-./gradlew run
+./gradlew run --console=plain
 ```
 
-O compilar y ejecutar el JAR:
+(El flag `--console=plain` evita problemas de consola interactiva en algunos terminales, como Git Bash.)
 
-```bash
-./gradlew jar
-java -jar build/libs/foodstore-jpa-0.0.1-SNAPSHOT.jar
-```
-
-La base de datos H2 se crea automáticamente en `./data/jpa_db.mv.db` al primer arranque.
+La base de datos H2 se crea automáticamente en `./data/jpa_db.mv.db` al primer arranque. No requiere instalación de base de datos aparte.
 
 ---
 
-## Credenciales / datos de prueba
+## Menú principal
 
-No hay carga inicial automática. Crear los datos desde el menú de consola en este orden:
+1. Gestionar Categorías (alta, modificar, baja lógica, listado)
+2. Gestionar Productos (alta con selección de categoría, modificar, baja lógica, listado)
+3. Gestionar Usuarios (alta con mail único, modificar, baja lógica, listado, buscar por mail)
+4. Gestionar Pedidos (alta con transacción atómica, cambiar estado, baja lógica, listados por usuario/estado)
+5. Reportes (productos por categoría, pedidos por usuario/estado, total facturado)
+0. Salir
+
+---
+
+## Datos de prueba
+
+No hay carga inicial automática (seed). Los datos se cargan desde el menú de consola, respetando este orden de dependencias:
 
 1. Categorías
-2. Productos (requieren categoría existente)
+2. Productos (requieren al menos una categoría activa)
 3. Usuarios
-4. Pedidos (requieren usuario y productos existentes)
+4. Pedidos (requieren al menos un usuario y un producto activos)
 
 ---
 
-## Entrega
+## Reglas de negocio destacadas
 
-- **Video demostrativo:** [link aquí]
-- **Informe PDF:** [link aquí]
+- Las bajas son siempre lógicas (`eliminado = true`); los registros no se eliminan físicamente y no aparecen en los listados activos.
+- El alta de un pedido se ejecuta en una única transacción: valida stock y disponibilidad de cada producto, calcula subtotales y total, y reduce el stock. Si algo falla, se hace rollback completo y no se persiste nada.
+- Dejar un campo vacío durante una modificación conserva el valor anterior.

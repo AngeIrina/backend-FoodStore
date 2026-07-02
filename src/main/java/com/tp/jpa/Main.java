@@ -687,16 +687,16 @@ public class Main {
     }
 
     private static EstadoPedido leerEstado() {
-        System.out.println("Estado: 1-PENDIENTE  2-CONFIRMADO  3-TERMINADO  4-CANCELADO");
+        System.out.println("Estado: 1-PENDIENTE  2-EN_PREPARACION  3-ENTREGADO  4-CANCELADO");
         System.out.print("Opción: ");
         String op = sc.nextLine().trim();
         switch (op) {
             case "1":
                 return EstadoPedido.PENDIENTE;
             case "2":
-                return EstadoPedido.CONFIRMADO;
+                return EstadoPedido.EN_PREPARACION;
             case "3":
-                return EstadoPedido.TERMINADO;
+                return EstadoPedido.ENTREGADO;
             case "4":
                 return EstadoPedido.CANCELADO;
             default:
@@ -1007,7 +1007,7 @@ public class Main {
     }
 
     private static void reporteTotalFacturado() {
-        List<Pedido> terminados = pedidoRepo.buscarPorEstado(EstadoPedido.TERMINADO);
+        List<Pedido> terminados = pedidoRepo.buscarPorEstado(EstadoPedido.ENTREGADO);
         double total = terminados.stream()
                 .mapToDouble(p -> p.getTotal() != null ? p.getTotal() : 0.0)
                 .sum();
